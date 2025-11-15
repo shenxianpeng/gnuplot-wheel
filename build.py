@@ -43,3 +43,4 @@ class GnuplotBuild(build_py):
             shutil.copy(os.path.join(dest_dir, prefix.lstrip('/'), 'bin', 'gnuplot'), install_dir)
 
         super().run()
+
