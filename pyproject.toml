@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gnuplot-wheel"
+version = "0.0.1"
+authors = [
+  { name="Your Name", email="your@email.com" },
+]
+description = "A Python wheel for gnuplot"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+gnuplot = "gnuplot_wheel.gnuplot_proxy:main"
+
+[project.urls]
+"Homepage" = "https://github.com/your-username/gnuplot-wheel"
+"Bug Tracker" = "https://github.com/your-username/gnuplot-wheel/issues"
