@@ -3,31 +3,29 @@ requires = ["setuptools>=61.0", "setuptools-scm>=8.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "gnuplot-wheel"
+name = "gnuplot"
 dynamic = ["version"]
-authors = [
-  { name="Xianpeng Shen", email="xianpeng.shen@gmail.com" },
-]
 description = "A Python wheel for gnuplot"
 readme = "README.md"
-requires-python = ">=3.8"
-license = { text = "MIT" }
+requires-python = ">=3.9"
+license = "MIT"
+authors = [
+  { name = "Xianpeng Shen", email = "xianpeng.shen@gmail.com" },
+]
+keywords = ["gnuplot", "plotting", "visualization"]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: MacOS",
     "Topic :: Scientific/Engineering :: Visualization",
 ]
-keywords = ["gnuplot", "plotting", "visualization"]
 
 [project.scripts]
 gnuplot = "gnuplot_wheel.gnuplot_proxy:main"
@@ -36,7 +34,6 @@ gnuplot = "gnuplot_wheel.gnuplot_proxy:main"
 Homepage = "https://github.com/shenxianpeng/gnuplot-wheel"
 Repository = "https://github.com/shenxianpeng/gnuplot-wheel"
 "Bug Tracker" = "https://github.com/shenxianpeng/gnuplot-wheel/issues"
-Documentation = "https://github.com/shenxianpeng/gnuplot-wheel#readme"
 
 [tool.setuptools]
 packages = ["gnuplot_wheel"]
@@ -45,23 +42,9 @@ packages = ["gnuplot_wheel"]
 gnuplot_wheel = ["bin/gnuplot"]
 
 [tool.setuptools_scm]
-version_scheme = "guess-next-dev"
+# It would be nice to include the commit hash in the version, but that
+# can't be done in a PEP 440-compatible way.
+version_scheme = "no-guess-dev"
+# Test PyPI does not support local versions.
 local_scheme = "no-local-version"
-write_to = "gnuplot_wheel/_version.py"
-write_to_template = "__version__ = '{version}'\n"
-
-[tool.black]
-line-length = 100
-target-version = ["py38", "py39", "py310", "py311", "py312", "py313"]
-
-[tool.isort]
-profile = "black"
-line_length = 100
-
-[tool.ruff]
-line-length = 100
-target-version = "py38"
-
-[tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP"]
-ignore = []
+fallback_version = "0.0.0"
