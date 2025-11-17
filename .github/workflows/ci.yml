@@ -23,7 +23,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Build and test
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip build
           python -m build --wheel
           pip install dist/gnuplot-*.whl
           gnuplot --version
