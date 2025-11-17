@@ -12,23 +12,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-wheels:
+    name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
-        os: [ubuntu-latest, macos-latest]
-        exclude:
-          - python-version: '3.9'
-            os: macos-latest
-          - python-version: '3.10'
-            os: macos-latest
-          - python-version: '3.12'
-            os: macos-latest
-          - python-version: '3.13'
-            os: macos-latest
-          - python-version: '3.14'
-            os: macos-latest
+        os: [ubuntu-latest, macos-14]
 
     steps:
       - uses: actions/checkout@v5
@@ -36,39 +25,33 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22
+        env:
+          CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-*
+          CIBW_SKIP: "*-musllinux_* *-win32 *-manylinux_i686"
+          CIBW_ARCHS_LINUX: x86_64 aarch64
+          CIBW_ARCHS_MACOS: x86_64 arm64
+          CIBW_BEFORE_ALL_LINUX: |
+            if command -v yum >/dev/null 2>&1; then
+              yum install -y gd-devel readline-devel libpng-devel zlib-devel libjpeg-devel
+            elif command -v apt-get >/dev/null 2>&1; then
+              apt-get update && apt-get install -y libgd-dev libreadline-dev libpng-dev zlib1g-dev libjpeg-dev
+            else
+              echo "No supported package manager found!" >&2
+              exit 1
+            fi
+          CIBW_BEFORE_ALL_MACOS: |
+            brew install autoconf automake libtool gd readline libpng jpeg
+          CIBW_TEST_COMMAND: gnuplot --version
 
-      - name: Install build dependencies (Ubuntu)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential autoconf automake libtool \
-            libgd-dev libreadline-dev libpng-dev zlib1g-dev libjpeg-dev
-
-      - name: Install build dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: brew install autoconf automake libtool gd jpeg
-
-      - name: Build and test
-        run: |
-          python -m pip install --upgrade pip build
-          python -m build --wheel
-          pip install dist/gnuplot-*.whl
-          gnuplot --version
-          gnuplot --help
-
-      - name: Upload artifacts
-        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/' || github.event_name == 'workflow_dispatch')) && matrix.python-version == '3.11'
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}
-          path: dist/*.whl
+          path: ./wheelhouse/*.whl
 
   publish-testpypi:
-    needs: build
+    needs: build-wheels
     runs-on: ubuntu-latest
     if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
     permissions:
@@ -93,7 +76,7 @@ jobs:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 
   publish-pypi:
-    needs: build
+    needs: build-wheels
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
