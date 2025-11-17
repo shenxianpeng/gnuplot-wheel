@@ -2,6 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/gnuplot.svg)](https://pypi.org/project/gnuplot/)
 [![Python](https://img.shields.io/pypi/pyversions/gnuplot.svg)](https://pypi.org/project/gnuplot/)
+[![main](https://github.com/shenxianpeng/gnuplot-wheel/actions/workflows/main.yml/badge.svg)](https://github.com/shenxianpeng/gnuplot-wheel/actions/workflows/main.yml)
 
 A Python wheel distribution of [gnuplot](http://gnuplot.info/) - install and use gnuplot directly via pip.
 
