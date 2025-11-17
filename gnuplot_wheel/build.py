@@ -15,7 +15,9 @@ class GnuplotBuild(build_py):
             raise RuntimeError("gnuplot source directory not found")
 
         # The installation directory for gnuplot, within the package
-        install_dir = os.path.abspath(os.path.join(self.build_lib, "gnuplot_wheel", "bin"))
+        install_dir = os.path.abspath(
+            os.path.join(self.build_lib, "gnuplot_wheel", "bin")
+        )
         os.makedirs(install_dir, exist_ok=True)
 
         # Temporary directory for installation
@@ -39,9 +41,14 @@ class GnuplotBuild(build_py):
             ]
             subprocess.check_call(configure_command, cwd=gnuplot_dir)
             subprocess.check_call(["make"], cwd=gnuplot_dir)
-            subprocess.check_call(["make", "install", f"DESTDIR={dest_dir}"], cwd=gnuplot_dir)
+            subprocess.check_call(
+                ["make", "install", f"DESTDIR={dest_dir}"], cwd=gnuplot_dir
+            )
 
             # Copy the gnuplot binary to the package
-            shutil.copy(os.path.join(dest_dir, prefix.lstrip("/"), "bin", "gnuplot"), install_dir)
+            shutil.copy(
+                os.path.join(dest_dir, prefix.lstrip("/"), "bin", "gnuplot"),
+                install_dir,
+            )
 
         super().run()
