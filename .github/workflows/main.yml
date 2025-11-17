@@ -34,7 +34,17 @@ jobs:
           CIBW_ARCHS_MACOS: x86_64 arm64
           CIBW_BEFORE_ALL_LINUX: |
             if command -v yum >/dev/null 2>&1; then
-              yum install -y gd-devel readline-devel libpng-devel zlib-devel libjpeg-devel
+              yum install -y readline-devel libpng-devel zlib-devel libjpeg-devel wget
+              # Build libgd from source (system version is too old)
+              cd /tmp
+              wget https://github.com/libgd/libgd/releases/download/gd-2.3.3/libgd-2.3.3.tar.gz
+              tar -xzf libgd-2.3.3.tar.gz
+              cd libgd-2.3.3
+              ./configure --prefix=/usr/local
+              make -j$(nproc)
+              make install
+              ldconfig
+              cd /project
             elif command -v apt-get >/dev/null 2>&1; then
               apt-get update && apt-get install -y libgd-dev libreadline-dev libpng-dev zlib1g-dev libjpeg-dev
             else
