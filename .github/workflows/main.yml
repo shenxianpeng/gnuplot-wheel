@@ -10,6 +10,16 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      gnuplot_version:
+        description: 'Gnuplot version to build (e.g., 6.0.1)'
+        required: true
+        default: '6.0.1'
+      publish_testpypi:
+        description: 'Publish to TestPyPI'
+        type: boolean
+        required: false
+        default: true
 
 jobs:
   build-wheels:
@@ -17,13 +27,34 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-14]
+        os: [ubuntu-latest, macos-14, windows-latest]
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: true
-          fetch-depth: 0
+
+      - name: Extract gnuplot version from tag
+        id: version
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.gnuplot_version }}" ]]; then
+            # Use manual input version
+            VERSION="${{ inputs.gnuplot_version }}"
+            echo "GNUPLOT_VERSION=$VERSION" >> $GITHUB_ENV
+            echo "GNUPLOT_TAG=$VERSION" >> $GITHUB_ENV
+            echo "Using manual input version: $VERSION"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # Extract version from tag (e.g., v6.0.1 -> 6.0.1)
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+            echo "GNUPLOT_VERSION=$VERSION" >> $GITHUB_ENV
+            echo "GNUPLOT_TAG=$VERSION" >> $GITHUB_ENV
+            echo "Using tag version: $VERSION"
+          else
+            # Use default version for non-tag builds
+            echo "GNUPLOT_VERSION=6.0.1" >> $GITHUB_ENV
+            echo "GNUPLOT_TAG=6.0.1" >> $GITHUB_ENV
+            echo "Using default version: 6.0.1"
+          fi
 
       - name: Set up QEMU for cross-compilation
         if: runner.os == 'Linux'
@@ -34,13 +65,17 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22
         env:
+          GNUPLOT_VERSION: ${{ env.GNUPLOT_VERSION }}
+          GNUPLOT_TAG: ${{ env.GNUPLOT_TAG }}
           CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-*
           CIBW_SKIP: "*-musllinux_* *-win32 *-manylinux_i686"
           CIBW_ARCHS_LINUX: x86_64 aarch64
           CIBW_ARCHS_MACOS: x86_64 arm64
+          CIBW_ARCHS_WINDOWS: AMD64
           CIBW_BEFORE_ALL_LINUX: |
+            # Install git for cloning gnuplot
             if command -v yum >/dev/null 2>&1; then
-              yum install -y readline-devel libpng-devel zlib-devel libjpeg-devel wget
+              yum install -y git readline-devel libpng-devel zlib-devel libjpeg-devel wget
               # Build libgd from source (system version is too old)
               cd /tmp
               wget https://github.com/libgd/libgd/releases/download/gd-2.3.3/libgd-2.3.3.tar.gz
@@ -52,16 +87,23 @@ jobs:
               ldconfig
               cd /project
             elif command -v apt-get >/dev/null 2>&1; then
-              apt-get update && apt-get install -y libgd-dev libreadline-dev libpng-dev zlib1g-dev libjpeg-dev
+              apt-get update && apt-get install -y git libgd-dev libreadline-dev libpng-dev zlib1g-dev libjpeg-dev
             else
               echo "No supported package manager found!" >&2
               exit 1
             fi
+          CIBW_ENVIRONMENT_LINUX: GNUPLOT_VERSION=${{ env.GNUPLOT_VERSION }} GNUPLOT_TAG=${{ env.GNUPLOT_TAG }}
           CIBW_BEFORE_ALL_MACOS: |
-            brew install autoconf automake libtool gd jpeg
+            brew install autoconf automake libtool gd jpeg git
+          CIBW_ENVIRONMENT_MACOS: GNUPLOT_VERSION=${{ env.GNUPLOT_VERSION }} GNUPLOT_TAG=${{ env.GNUPLOT_TAG }}
+          CIBW_BEFORE_ALL_WINDOWS: |
+            choco install -y git
+          CIBW_ENVIRONMENT_WINDOWS: GNUPLOT_VERSION=${{ env.GNUPLOT_VERSION }} GNUPLOT_TAG=${{ env.GNUPLOT_TAG }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
             delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} || cp {wheel} {dest_dir}/
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
           CIBW_TEST_COMMAND: gnuplot --version
+          CIBW_TEST_SKIP: "*-win*"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -71,7 +113,9 @@ jobs:
   publish-testpypi:
     needs: build-wheels
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+    if: |
+      (github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.publish_testpypi == true)
     permissions:
       id-token: write
 
