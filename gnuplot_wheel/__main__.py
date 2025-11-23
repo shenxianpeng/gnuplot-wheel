@@ -8,8 +8,13 @@ def main():
     A proxy for the gnuplot executable.
     """
     # The path to the gnuplot executable will be relative to this script.
-    # This is not the final version, we will need to adjust this.
-    gnuplot_exe = os.path.join(os.path.dirname(__file__), "bin", "gnuplot")
+    # On Windows, we need to use gnuplot.exe
+    bin_dir = os.path.join(os.path.dirname(__file__), "bin")
+
+    if sys.platform == "win32":
+        gnuplot_exe = os.path.join(bin_dir, "gnuplot.exe")
+    else:
+        gnuplot_exe = os.path.join(bin_dir, "gnuplot")
 
     if not os.path.exists(gnuplot_exe):
         print(f"Error: gnuplot executable not found at {gnuplot_exe}", file=sys.stderr)

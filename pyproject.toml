@@ -28,7 +28,7 @@ classifiers = [
 ]
 
 [project.scripts]
-gnuplot = "gnuplot_wheel.gnuplot_proxy:main"
+gnuplot = "gnuplot_wheel.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/shenxianpeng/gnuplot-wheel"
