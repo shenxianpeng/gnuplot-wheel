@@ -29,6 +29,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        # use fetch --all for setuptools_scm to work
+        with:
+          fetch-depth: 0
 
       - name: Extract gnuplot version from tag
         id: version
