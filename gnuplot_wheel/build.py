@@ -83,19 +83,14 @@ class GnuplotBuild(build_py):
                 ]
             )
 
-            dest_dir = os.path.join(tmpdir, "gnuplot_install")
-            os.makedirs(dest_dir, exist_ok=True)
-
             # Run ./prepare to generate configure script
             if not os.path.exists(os.path.join(gnuplot_dir, "configure")):
                 print("Running ./prepare...")
                 subprocess.check_call(["./prepare"], cwd=gnuplot_dir)
 
-            # Configure, make, and install
-            prefix = "/usr/local"
+            # Configure gnuplot build
             configure_command = [
                 "./configure",
-                f"--prefix={prefix}",
                 "--without-qt",
                 "--without-wx",
                 "--without-lua",
@@ -116,15 +111,11 @@ class GnuplotBuild(build_py):
                 ["make", "-j4", "gnuplot"], cwd=gnuplot_dir, env=build_env
             )
 
-            print("Installing gnuplot...")
-            # Install only the binary, skip docs
-            subprocess.check_call(
-                ["make", "install-binPROGRAMS", f"DESTDIR={dest_dir}"],
-                cwd=gnuplot_dir,
-                env=build_env,
-            )
+            # Copy the gnuplot binary directly from the build directory
+            src_binary = os.path.join(gnuplot_dir, "src", "gnuplot")
+            if not os.path.exists(src_binary):
+                # Fallback: try without src/ subdirectory
+                src_binary = os.path.join(gnuplot_dir, "gnuplot")
 
-            # Copy the gnuplot binary to the package
-            src_binary = os.path.join(dest_dir, prefix.lstrip("/"), "bin", "gnuplot")
             shutil.copy(src_binary, install_dir)
             print(f"Copied gnuplot binary to {install_dir}")
