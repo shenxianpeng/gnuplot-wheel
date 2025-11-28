@@ -102,14 +102,26 @@ class GnuplotBuild(build_py):
                 "--without-libcerf",
             ]
             print("Configuring gnuplot...")
-            subprocess.check_call(configure_command, cwd=gnuplot_dir)
+
+            # Set locale to UTF-8 to handle multibyte characters in documentation
+            build_env = os.environ.copy()
+            build_env["LC_ALL"] = "en_US.UTF-8"
+            build_env["LANG"] = "en_US.UTF-8"
+
+            subprocess.check_call(configure_command, cwd=gnuplot_dir, env=build_env)
 
             print("Building gnuplot...")
-            subprocess.check_call(["make", "-j4"], cwd=gnuplot_dir)
+            # Build only the gnuplot binary, skip docs to avoid locale issues
+            subprocess.check_call(
+                ["make", "-j4", "gnuplot"], cwd=gnuplot_dir, env=build_env
+            )
 
             print("Installing gnuplot...")
+            # Install only the binary, skip docs
             subprocess.check_call(
-                ["make", "install", f"DESTDIR={dest_dir}"], cwd=gnuplot_dir
+                ["make", "install-binPROGRAMS", f"DESTDIR={dest_dir}"],
+                cwd=gnuplot_dir,
+                env=build_env,
             )
 
             # Copy the gnuplot binary to the package
