@@ -1,7 +1,7 @@
 # gnuplot
 
-[![PyPI](https://img.shields.io/pypi/v/gnuplot.svg)](https://pypi.org/project/gnuplot/)
-[![Python](https://img.shields.io/pypi/pyversions/gnuplot.svg)](https://pypi.org/project/gnuplot/)
+[![PyPI](https://img.shields.io/pypi/v/gnuplot-wheel.svg)](https://pypi.org/project/gnuplot-wheel/)
+[![Python](https://img.shields.io/pypi/pyversions/gnuplot-wheel.svg)](https://pypi.org/project/gnuplot-wheel/)
 [![main](https://github.com/shenxianpeng/gnuplot-wheel/actions/workflows/main.yml/badge.svg)](https://github.com/shenxianpeng/gnuplot-wheel/actions/workflows/main.yml)
 
 A Python wheel distribution of [gnuplot](http://gnuplot.info/) - install and use gnuplot directly via pip.
@@ -9,7 +9,7 @@ A Python wheel distribution of [gnuplot](http://gnuplot.info/) - install and use
 ## Installation
 
 ```bash
-pip install gnuplot
+pip install gnuplot-wheel
 ```
 
 ## Development
