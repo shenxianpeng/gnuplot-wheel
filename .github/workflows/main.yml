@@ -141,7 +141,7 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --find-links=./wheelhouse --no-index gnuplot
+          python -m pip install --find-links=./wheelhouse --no-index gnuplot-wheel
 
       - name: Test gnuplot installation
         shell: bash
