@@ -116,33 +116,37 @@ jobs:
           path: ./wheelhouse/*.whl
 
   test-wheels:
-    name: Test wheels on ${{ matrix.os }}
+    name: Test wheels on ${{ matrix.os }} with Python ${{ matrix.python-version }}
+    needs: build-wheels
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-14, windows-latest]
-        python-version: [3.9, 3.10, 3.11, 3.12, 3.13, 3.14]
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
       - uses: actions/checkout@v5
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
-          path: ./wheelhouse/*.whl
-          merge-multiple: true
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Download wheels for ${{ matrix.os }}
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: ./wheelhouse
+
       - name: Install gnuplot wheel
+        shell: bash
         run: |
           python -m pip install --upgrade pip
-          python -m pip install wheel
-          python -m pip install ./wheelhouse/*.whl
+          python -m pip install wheelhouse/*.whl
+
       - name: Test gnuplot installation
+        shell: bash
         run: |
           gnuplot --version
-          python -c "import gnuplot; print('Gnuplot version:', gnuplot.gnuplot_version())"
 
   publish-testpypi:
     needs: [build-wheels, test-wheels]
