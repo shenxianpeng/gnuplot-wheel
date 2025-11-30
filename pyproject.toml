@@ -40,7 +40,7 @@ Repository = "https://github.com/shenxianpeng/gnuplot-wheel"
 packages = ["gnuplot_wheel"]
 
 [tool.setuptools_scm]
-version_scheme = "post-release"
+version_scheme = "guess-next-dev"
 local_scheme = "no-local-version"
 # https://sourceforge.net/p/gnuplot/gnuplot-main/ref/master/tags/
 fallback_version = "6.0.0"
