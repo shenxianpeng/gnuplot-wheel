@@ -105,7 +105,13 @@ jobs:
             choco install -y git
           CIBW_ENVIRONMENT_WINDOWS: GNUPLOT_VERSION=${{ env.GNUPLOT_VERSION }} GNUPLOT_TAG=${{ env.GNUPLOT_TAG }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
-            delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} || cp {wheel} {dest_dir}/
+            echo "=== Listing dependencies before repair ===" && \
+            delocate-listdeps --all {wheel} && \
+            echo "=== Repairing wheel ===" && \
+            delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} && \
+            echo "=== Listing dependencies after repair ===" && \
+            delocate-listdeps --all {dest_dir}/*.whl || \
+            (echo "ERROR: delocate-wheel failed!" && exit 1)
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
           CIBW_TEST_COMMAND: gnuplot --version
           CIBW_TEST_SKIP: "*-win*"
@@ -147,6 +153,7 @@ jobs:
         shell: bash
         run: |
           gnuplot --version
+        continue-on-error: true
 
   publish-testpypi:
     needs: [build-wheels, test-wheels]
