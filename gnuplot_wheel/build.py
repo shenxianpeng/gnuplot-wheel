@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -34,10 +35,13 @@ class GnuplotBuild(build_py):
 
         # Get gnuplot version from environment or use default
         gnuplot_version = os.environ.get("GNUPLOT_VERSION", "6.0.1")
-        version_short = gnuplot_version.replace(".", "")
+
+        # Strip .postN suffix for SourceForge download (e.g., 6.0.0.post1 -> 6.0.0)
+        gnuplot_base_version = re.sub(r"\.post\d+$", "", gnuplot_version)
+        version_short = gnuplot_base_version.replace(".", "")
 
         # Use the official gnuplot Windows binary
-        url = f"https://sourceforge.net/projects/gnuplot/files/gnuplot/{gnuplot_version}/gp{version_short}-win64-mingw.zip/download"
+        url = f"https://sourceforge.net/projects/gnuplot/files/gnuplot/{gnuplot_base_version}/gp{version_short}-win64-mingw.zip/download"
 
         with tempfile.TemporaryDirectory() as tmpdir:
             zip_path = os.path.join(tmpdir, "gnuplot.zip")
@@ -65,11 +69,14 @@ class GnuplotBuild(build_py):
         gnuplot_version = os.environ.get("GNUPLOT_VERSION", "6.0.1")
         gnuplot_tag = os.environ.get("GNUPLOT_TAG", gnuplot_version)
 
+        # Strip .postN suffix from tag for cloning (e.g., 6.0.0.post1 -> 6.0.0)
+        gnuplot_base_version = re.sub(r"\.post\d+$", "", gnuplot_tag)
+
         with tempfile.TemporaryDirectory() as tmpdir:
             gnuplot_dir = os.path.join(tmpdir, "gnuplot")
 
             # Clone specific tag from gnuplot repository
-            print(f"Cloning gnuplot {gnuplot_tag}...")
+            print(f"Cloning gnuplot {gnuplot_base_version}...")
             subprocess.check_call(
                 [
                     "git",
@@ -77,7 +84,7 @@ class GnuplotBuild(build_py):
                     "--depth",
                     "1",
                     "--branch",
-                    gnuplot_tag,
+                    gnuplot_base_version,
                     "https://git.code.sf.net/p/gnuplot/gnuplot-main",
                     gnuplot_dir,
                 ]
