@@ -75,7 +75,7 @@ class GnuplotBuild(build_py):
                     print(f"Copied {file} to {install_dir}")
 
             if files_copied == 0:
-                raise RuntimeError("No executable or DLL files found")
+                raise RuntimeError(f"No .exe or .dll files found in {gnuplot_bin_dir}")
 
             print(
                 f"Successfully copied {files_copied} files (gnuplot.exe and dependencies)"
