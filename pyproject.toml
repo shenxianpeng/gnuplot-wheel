@@ -46,7 +46,7 @@ local_scheme = "no-local-version"
 fallback_version = "6.0.0"
 
 [tool.setuptools.package-data]
-gnuplot_wheel = ["bin/gnuplot", "bin/gnuplot.exe"]
+gnuplot_wheel = ["bin/gnuplot", "bin/*.exe", "bin/*.dll"]
 
 [tool.cibuildwheel]
 build-verbosity = 1
