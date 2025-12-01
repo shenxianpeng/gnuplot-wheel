@@ -67,7 +67,7 @@ class GnuplotBuild(build_py):
             # Copy gnuplot.exe and all DLL files
             files_copied = 0
             for file in os.listdir(gnuplot_bin_dir):
-                if file.endswith((".exe", ".dll")):
+                if file.lower().endswith((".exe", ".dll")):
                     src = os.path.join(gnuplot_bin_dir, file)
                     dst = os.path.join(install_dir, file)
                     shutil.copy(src, dst)
