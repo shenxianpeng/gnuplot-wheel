@@ -54,15 +54,32 @@ class GnuplotBuild(build_py):
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall(tmpdir)
 
-            # Find and copy gnuplot.exe
+            # Find the bin directory containing gnuplot.exe and all DLLs
+            gnuplot_bin_dir = None
             for root, dirs, files in os.walk(tmpdir):
                 if "gnuplot.exe" in files:
-                    src = os.path.join(root, "gnuplot.exe")
-                    shutil.copy(src, install_dir)
-                    print(f"Copied gnuplot.exe to {install_dir}")
-                    return
+                    gnuplot_bin_dir = root
+                    break
 
-            raise RuntimeError("Could not find gnuplot.exe in downloaded archive")
+            if not gnuplot_bin_dir:
+                raise RuntimeError("Could not find gnuplot.exe in downloaded archive")
+
+            # Copy gnuplot.exe and all DLL files
+            files_copied = 0
+            for file in os.listdir(gnuplot_bin_dir):
+                if file.lower().endswith((".exe", ".dll")):
+                    src = os.path.join(gnuplot_bin_dir, file)
+                    dst = os.path.join(install_dir, file)
+                    shutil.copy(src, dst)
+                    files_copied += 1
+                    print(f"Copied {file} to {install_dir}")
+
+            if files_copied == 0:
+                raise RuntimeError(f"No .exe or .dll files found in {gnuplot_bin_dir}")
+
+            print(
+                f"Successfully copied {files_copied} files (gnuplot.exe and dependencies)"
+            )
 
     def _build_unix(self, install_dir):
         """Build gnuplot from source on Unix-like systems."""
