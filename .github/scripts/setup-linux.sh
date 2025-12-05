@@ -7,7 +7,7 @@ echo "Installing build dependencies for Linux..."
 
 if command -v yum >/dev/null 2>&1; then
   echo "Detected yum package manager (RHEL/CentOS)"
-  yum install -y readline-devel libpng-devel zlib-devel libjpeg-devel wget freetype-devel fontconfig-devel
+  yum install -y git readline-devel libpng-devel zlib-devel libjpeg-devel wget freetype-devel fontconfig-devel
   
   # Build libgd from source with FreeType support (system version is too old in RHEL/CentOS)
   echo "Building libgd from source..."
@@ -24,7 +24,7 @@ if command -v yum >/dev/null 2>&1; then
 elif command -v apt-get >/dev/null 2>&1; then
   echo "Detected apt-get package manager (Debian/Ubuntu)"
   apt-get update
-  apt-get install -y libgd-dev libreadline-dev libpng-dev zlib1g-dev libjpeg-dev libfreetype6-dev libfontconfig1-dev
+  apt-get install -y git libgd-dev libreadline-dev libpng-dev zlib1g-dev libjpeg-dev libfreetype6-dev libfontconfig1-dev
   
 else
   echo "ERROR: No supported package manager found (yum or apt-get)!" >&2
