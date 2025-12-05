@@ -79,8 +79,6 @@ jobs:
           CIBW_BEFORE_ALL_MACOS: |
             bash .github/scripts/setup-macos.sh
           CIBW_ENVIRONMENT_MACOS: GNUPLOT_VERSION=${{ env.GNUPLOT_VERSION }} GNUPLOT_TAG=${{ env.GNUPLOT_TAG }}
-          CIBW_BEFORE_ALL_WINDOWS: |
-            choco install -y git
           CIBW_ENVIRONMENT_WINDOWS: GNUPLOT_VERSION=${{ env.GNUPLOT_VERSION }} GNUPLOT_TAG=${{ env.GNUPLOT_TAG }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
             delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} || cp {wheel} {dest_dir}/
