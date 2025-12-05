@@ -7,11 +7,10 @@ runs:
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        brew install autoconf automake libtool gd jpeg
+        bash ${{ github.action_path }}/../../scripts/setup-macos.sh
 
     - name: Install build dependencies (Linux)
       if: runner.os == 'Linux'
       shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libgd-dev libreadline-dev libpng-dev zlib1g-dev libjpeg-dev libfreetype6-dev libfontconfig1-dev
+        sudo bash ${{ github.action_path }}/../../scripts/setup-linux.sh
