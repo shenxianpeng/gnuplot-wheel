@@ -74,31 +74,11 @@ jobs:
           CIBW_ARCHS_MACOS: x86_64 arm64
           CIBW_ARCHS_WINDOWS: AMD64
           CIBW_BEFORE_ALL_LINUX: |
-            # Install git for cloning gnuplot
-            if command -v yum >/dev/null 2>&1; then
-              yum install -y git readline-devel libpng-devel zlib-devel libjpeg-devel wget freetype-devel fontconfig-devel
-              # Build libgd from source with FreeType support (system version is too old)
-              cd /tmp
-              wget https://github.com/libgd/libgd/releases/download/gd-2.3.3/libgd-2.3.3.tar.gz
-              tar -xzf libgd-2.3.3.tar.gz
-              cd libgd-2.3.3
-              ./configure --prefix=/usr/local --with-freetype
-              make -j$(nproc)
-              make install
-              ldconfig
-              cd /project
-            elif command -v apt-get >/dev/null 2>&1; then
-              apt-get update && apt-get install -y git libgd-dev libreadline-dev libpng-dev zlib1g-dev libjpeg-dev libfreetype6-dev libfontconfig1-dev
-            else
-              echo "No supported package manager found!" >&2
-              exit 1
-            fi
+            bash .github/scripts/setup-linux.sh
           CIBW_ENVIRONMENT_LINUX: GNUPLOT_VERSION=${{ env.GNUPLOT_VERSION }} GNUPLOT_TAG=${{ env.GNUPLOT_TAG }}
           CIBW_BEFORE_ALL_MACOS: |
-            brew install autoconf automake libtool gd jpeg git
+            bash .github/scripts/setup-macos.sh
           CIBW_ENVIRONMENT_MACOS: GNUPLOT_VERSION=${{ env.GNUPLOT_VERSION }} GNUPLOT_TAG=${{ env.GNUPLOT_TAG }}
-          CIBW_BEFORE_ALL_WINDOWS: |
-            choco install -y git
           CIBW_ENVIRONMENT_WINDOWS: GNUPLOT_VERSION=${{ env.GNUPLOT_VERSION }} GNUPLOT_TAG=${{ env.GNUPLOT_TAG }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
             delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} || cp {wheel} {dest_dir}/

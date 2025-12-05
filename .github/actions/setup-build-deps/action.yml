@@ -1,0 +1,16 @@
+name: 'Set up Build Dependencies'
+description: 'Install platform-specific build dependencies for gnuplot'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install build dependencies (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        bash ${{ github.action_path }}/../../scripts/setup-macos.sh
+
+    - name: Install build dependencies (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo bash ${{ github.action_path }}/../../scripts/setup-linux.sh
