@@ -1,4 +1,4 @@
-name: 'Setup Build Dependencies'
+name: 'Set up Build Dependencies'
 description: 'Install platform-specific build dependencies for gnuplot'
 runs:
   using: 'composite'
