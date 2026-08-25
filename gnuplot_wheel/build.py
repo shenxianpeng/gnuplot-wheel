@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -41,18 +42,27 @@ class GnuplotBuild(build_py):
         version_short = gnuplot_base_version.replace(".", "")
 
         # Use the official gnuplot Windows binary
-        url = f"https://sourceforge.net/projects/gnuplot/files/gnuplot/{gnuplot_base_version}/gp{version_short}-win64-mingw.zip/download"
+        base_url = (
+            f"https://sourceforge.net/projects/gnuplot/files/gnuplot/"
+            f"{gnuplot_base_version}"
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
+            # Up to 6.0.3 gnuplot shipped a mingw zip; from 6.0.4 only an
+            # Inno Setup installer (gpXXX-win64-clang.exe) is published.
+            zip_url = f"{base_url}/gp{version_short}-win64-mingw.zip/download"
             zip_path = os.path.join(tmpdir, "gnuplot.zip")
 
-            # Download
-            print(f"Downloading from {url}")
-            urllib.request.urlretrieve(url, zip_path)
-
-            # Extract
-            with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                zip_ref.extractall(tmpdir)
+            print(f"Downloading from {zip_url}")
+            try:
+                urllib.request.urlretrieve(zip_url, zip_path)
+                with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                    zip_ref.extractall(tmpdir)
+            except urllib.error.HTTPError as e:
+                if e.code != 404:
+                    raise
+                print("mingw zip not available, falling back to installer...")
+                self._download_and_extract_installer(base_url, version_short, tmpdir)
 
             # Find the bin directory containing gnuplot.exe and all DLLs
             gnuplot_bin_dir = None
@@ -80,6 +90,28 @@ class GnuplotBuild(build_py):
             print(
                 f"Successfully copied {files_copied} files (gnuplot.exe and dependencies)"
             )
+
+    def _download_and_extract_installer(self, base_url, version_short, tmpdir):
+        """Download the Inno Setup installer and silently install it into tmpdir."""
+        installer_url = f"{base_url}/gp{version_short}-win64-clang.exe/download"
+        installer_path = os.path.join(tmpdir, "gnuplot-setup.exe")
+
+        print(f"Downloading from {installer_url}")
+        urllib.request.urlretrieve(installer_url, installer_path)
+
+        extract_dir = os.path.join(tmpdir, "gnuplot")
+        print(f"Running installer silently into {extract_dir}")
+        subprocess.check_call(
+            [
+                installer_path,
+                "/VERYSILENT",
+                "/SUPPRESSMSGBOXES",
+                "/NORESTART",
+                "/SP-",
+                "/NOICONS",
+                f"/DIR={extract_dir}",
+            ]
+        )
 
     def _build_unix(self, install_dir):
         """Build gnuplot from source on Unix-like systems."""
