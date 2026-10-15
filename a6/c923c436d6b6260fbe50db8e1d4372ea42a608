@@ -1,0 +1,18 @@
+.github/actions/setup-build-deps/README.md
+  h_20d8fd5fdd9091 48
+.github/scripts/setup-linux.sh
+  h_20d8fd5fdd9091 14,26,31
+.pre-commit-config.yaml
+  h_20d8fd5fdd9091 15,20,25,31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a6c923c436d6b6260fbe50db8e1d4372ea42a608",
+  "prompts": {},
+  "humans": {
+    "h_20d8fd5fdd9091": {
+      "author": "Xianpeng Shen <xianpeng.shen@gmail.com>"
+    }
+  }
+}
