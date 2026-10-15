@@ -45,7 +45,7 @@ No dependencies are installed on Windows (uses pre-built binaries).
 ```yaml
 steps:
   - uses: actions/checkout@v6
-  
+
   - name: Set up build dependencies
     uses: ./.github/actions/setup-build-deps
 ```
