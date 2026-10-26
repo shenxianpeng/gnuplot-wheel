@@ -14,6 +14,10 @@ from setuptools.command.build_py import build_py
 class GnuplotBuild(build_py):
     """Custom build command to build and install gnuplot."""
 
+    # Windows Inno Setup installer names, tried in order:
+    # 6.0.4 shipped gpXXX-win64-clang.exe, 6.0.5 ships gpXXX-win64-mingw.exe.
+    _INSTALLER_NAMES = ("gp{v}-win64-mingw.exe", "gp{v}-win64-clang.exe")
+
     def run(self):
         # The installation directory for gnuplot, within the package
         install_dir = os.path.abspath(
@@ -49,7 +53,7 @@ class GnuplotBuild(build_py):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Up to 6.0.3 gnuplot shipped a mingw zip; from 6.0.4 only an
-            # Inno Setup installer (gpXXX-win64-clang.exe) is published.
+            # Inno Setup installer is published (see _INSTALLER_NAMES).
             zip_url = f"{base_url}/gp{version_short}-win64-mingw.zip/download"
             zip_path = os.path.join(tmpdir, "gnuplot.zip")
 
@@ -93,11 +97,20 @@ class GnuplotBuild(build_py):
 
     def _download_and_extract_installer(self, base_url, version_short, tmpdir):
         """Download the Inno Setup installer and silently install it into tmpdir."""
-        installer_url = f"{base_url}/gp{version_short}-win64-clang.exe/download"
         installer_path = os.path.join(tmpdir, "gnuplot-setup.exe")
 
-        print(f"Downloading from {installer_url}")
-        urllib.request.urlretrieve(installer_url, installer_path)
+        for name in self._INSTALLER_NAMES:
+            installer_url = f"{base_url}/{name.format(v=version_short)}/download"
+            print(f"Downloading from {installer_url}")
+            try:
+                urllib.request.urlretrieve(installer_url, installer_path)
+                break
+            except urllib.error.HTTPError as e:
+                if e.code != 404:
+                    raise
+                print("Not found, trying next installer name...")
+        else:
+            raise RuntimeError(f"No gnuplot Windows installer found at {base_url}")
 
         extract_dir = os.path.join(tmpdir, "gnuplot")
         print(f"Running installer silently into {extract_dir}")
